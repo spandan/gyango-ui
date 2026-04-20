@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">GyanGo Logo Placeholder</title>
+  <desc id="desc">Rounded square with book and spark symbol in blue tones.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#274c77"/>
+      <stop offset="100%" stop-color="#6096ba"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="url(#bg)"/>
+  <path d="M38 42c12 0 18 5 26 12c8-7 14-12 26-12v44c-12 0-18 5-26 12c-8-7-14-12-26-12z" fill="#fff"/>
+  <circle cx="92" cy="36" r="8" fill="#f8d66d"/>
+</svg>
