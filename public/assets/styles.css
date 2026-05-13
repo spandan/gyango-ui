@@ -28,6 +28,7 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
@@ -95,6 +96,7 @@ textarea:focus-visible {
 /* Header */
 
 .site-header {
+  flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -784,6 +786,7 @@ code {
 /* Footer */
 
 .site-footer {
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
   margin-top: auto;
   padding: 2rem 0 1.5rem;
@@ -831,19 +834,19 @@ code {
   border-top: 1px solid var(--border);
 }
 
-/* Layout: sticky footer feel */
-html,
+/* Layout: footer pinned to bottom of viewport on short pages */
 body {
   min-height: 100%;
-}
-
-body {
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
 #main-content {
-  flex: 1;
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 0;
 }
 
 @media (min-width: 760px) {
