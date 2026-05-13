@@ -4,6 +4,7 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const fs = require("fs");
+const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
 const { Pool } = require("pg");
@@ -31,7 +32,15 @@ const IS_DEPLOYED =
   Boolean(process.env.RAILWAY_ENVIRONMENT) ||
   Boolean(process.env.RAILWAY_PUBLIC_DOMAIN);
 
-const SESSION_SECRET = process.env.SESSION_SECRET || (IS_DEPLOYED ? "" : "dev-only-session-secret");
+const SESSION_SECRET_EFFECTIVE = (() => {
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  if (!IS_DEPLOYED) return "dev-only-session-secret";
+  console.warn(
+    "[session] SESSION_SECRET is not set — using a random secret for this process only. " +
+      "Set SESSION_SECRET on Railway so admin sessions survive restarts and deploys."
+  );
+  return crypto.randomBytes(32).toString("hex");
+})();
 
 const SESSION_COOKIE_SECURE =
   process.env.SESSION_COOKIE_SECURE === "0"
@@ -208,15 +217,10 @@ app.use((req, res, next) => {
   next();
 });
 
-if (IS_DEPLOYED && !process.env.SESSION_SECRET) {
-  console.error("[session] Set SESSION_SECRET when deployed (Railway variable).");
-  process.exit(1);
-}
-
 app.use(
   session({
     name: "gyango.sid",
-    secret: SESSION_SECRET || "dev-only-session-secret",
+    secret: SESSION_SECRET_EFFECTIVE,
     resave: false,
     saveUninitialized: false,
     cookie: {

@@ -44,7 +44,7 @@ The inbox uses an **in-page sign-in** (not browser HTTP Basic). Set on Railway (
 | `ADMIN_USERNAME` | `admin` |
 | `ADMIN_PASSWORD` | `changeme` |
 | `ADMIN_BASE_PATH` | `internal-sys` (no slashes) |
-| `SESSION_SECRET` | _(required when deployed — see [`.env.example`](.env.example))_ |
+| `SESSION_SECRET` | **Strongly recommended** on Railway (stable admin cookie signing). If unset, the app still starts and uses a random secret per process (sessions reset on each deploy/restart). |
 
 The server logs a warning if default admin username/password are still in use.
 
@@ -88,7 +88,7 @@ Config-as-code lives in [`railway.json`](railway.json): **Railpack** build, **`n
    | Variable | Recommended |
    |----------|-------------|
    | `NODE_ENV` | `production` |
-   | `SESSION_SECRET` | Long random string (required when deployed; signs the admin session cookie) |
+   | `SESSION_SECRET` | Long random string (recommended; keeps admin sessions stable across deploys) |
    | `DATABASE_URL` | Reference from Postgres (required for feedback + admin) |
    | `ALLOWED_HOSTS` | Your public hostname(s), comma-separated (e.g. `www.example.com,example.com`) — **strongly recommended** in production |
    | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Strong unique values (replace defaults) |
