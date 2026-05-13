@@ -28,6 +28,8 @@ Open **http://localhost:3000** (Railway sets `PORT` in production).
 
 Default admin path segment: **`internal-sys`** → e.g. `http://localhost:3000/internal-sys/feedback`. The marketing site nav includes an **Admin** link to that path; if you change `ADMIN_BASE_PATH`, update the `href` on **Admin** in the HTML under [`public/`](public/) to match.
 
+If production still shows **HTTP Basic** or a **“← Public site”** link with no marketing header, the live service is running an **older build**—redeploy from this repository so the session sign-in and shared [`lib/siteChrome.js`](lib/siteChrome.js) layout apply.
+
 ### Admin credentials (session)
 
 The inbox uses an **in-page sign-in** (not browser HTTP Basic). Set on Railway (do **not** ship defaults in production):
