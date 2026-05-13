@@ -5,21 +5,40 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const fs = require("fs");
 const express = require("express");
+const session = require("express-session");
 const { Pool } = require("pg");
-const renderAdminFeedbackPage = require("./lib/adminFeedbackHtml");
+const { renderLayout } = require("./lib/siteChrome");
+const {
+  getAdminInboxStyles,
+  renderAdminInboxContent,
+  renderAdminLoginContent,
+} = require("./lib/adminFeedbackHtml");
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
 const SQL_DIR = path.join(ROOT, "sql");
 
-/** Hidden admin UI (HTTP Basic). Override path with ADMIN_BASE_PATH (single segment, no slashes). */
 const ADMIN_BASE_RAW = (process.env.ADMIN_BASE_PATH || "internal-sys").replace(/^\/+|\/+$/g, "");
 const ADMIN_BASE = ADMIN_BASE_RAW.includes("/")
   ? "internal-sys"
   : ADMIN_BASE_RAW || "internal-sys";
 const ADMIN_USER = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || "changeme";
+
+const IS_DEPLOYED =
+  process.env.NODE_ENV === "production" ||
+  Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+  Boolean(process.env.RAILWAY_PUBLIC_DOMAIN);
+
+const SESSION_SECRET = process.env.SESSION_SECRET || (IS_DEPLOYED ? "" : "dev-only-session-secret");
+
+const SESSION_COOKIE_SECURE =
+  process.env.SESSION_COOKIE_SECURE === "0"
+    ? false
+    : process.env.SESSION_COOKIE_SECURE === "1" ||
+      process.env.NODE_ENV === "production" ||
+      Boolean(process.env.RAILWAY_PUBLIC_DOMAIN);
 
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const RATE_MAX = 10;
@@ -149,26 +168,29 @@ function validateBody(body) {
   return { name: name || null, email: emailRaw || null, message, source };
 }
 
-function parseBasicAuth(header) {
-  if (!header || !header.startsWith("Basic ")) return null;
-  const decoded = Buffer.from(header.slice(6), "base64").toString("utf8");
-  const colon = decoded.indexOf(":");
-  if (colon === -1) return null;
-  return { user: decoded.slice(0, colon), pass: decoded.slice(colon + 1) };
-}
-
-function adminAuth(req, res, next) {
-  const creds = parseBasicAuth(req.get("authorization"));
-  if (!creds || creds.user !== ADMIN_USER || creds.pass !== ADMIN_PASS) {
-    res.set("WWW-Authenticate", 'Basic realm="GyanGo"');
-    res.status(401).type("text/plain").send("Unauthorized");
-    return;
-  }
-  next();
+async function verifyTurnstileToken(token, remoteip) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true;
+  if (!token || typeof token !== "string") return false;
+  const body = new URLSearchParams();
+  body.set("secret", secret);
+  body.set("response", token);
+  if (remoteip) body.set("remoteip", remoteip);
+  const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const data = await r.json().catch(() => ({}));
+  return data.success === true;
 }
 
 function adminPrefixPath() {
   return `/${ADMIN_BASE}`;
+}
+
+function adminFeedbackHref() {
+  return `${adminPrefixPath()}/feedback`;
 }
 
 const app = express();
@@ -185,6 +207,26 @@ app.use((req, res, next) => {
   next();
 });
 
+if (IS_DEPLOYED && !process.env.SESSION_SECRET) {
+  console.error("[session] Set SESSION_SECRET when deployed (Railway variable).");
+  process.exit(1);
+}
+
+app.use(
+  session({
+    name: "gyango.sid",
+    secret: SESSION_SECRET || "dev-only-session-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: SESSION_COOKIE_SECURE,
+      sameSite: "lax",
+      maxAge: 12 * 60 * 60 * 1000,
+    },
+  })
+);
+
 app.use(
   express.urlencoded({
     extended: false,
@@ -194,6 +236,12 @@ app.use(
 
 app.get("/healthz", (_req, res) => {
   res.status(200).type("text/plain").send("ok");
+});
+
+app.get("/api/site-config.json", (_req, res) => {
+  res.json({
+    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || null,
+  });
 });
 
 app.post("/api/feedback", async (req, res) => {
@@ -222,6 +270,22 @@ app.post("/api/feedback", async (req, res) => {
     return;
   }
 
+  const turnstileToken =
+    typeof req.body["cf-turnstile-response"] === "string" ? req.body["cf-turnstile-response"] : "";
+  if (process.env.TURNSTILE_SECRET_KEY) {
+    let ok = false;
+    try {
+      ok = await verifyTurnstileToken(turnstileToken, ip);
+    } catch (e) {
+      console.error("[feedback] turnstile verify error", e);
+      ok = false;
+    }
+    if (!ok) {
+      res.redirect(303, "/contact.html?error=captcha");
+      return;
+    }
+  }
+
   const parsed = validateBody(req.body);
   if (parsed.error) {
     res.redirect(
@@ -248,11 +312,54 @@ app.post("/api/feedback", async (req, res) => {
   res.redirect(303, "/contact.html?thanks=1");
 });
 
-app.get(`${adminPrefixPath()}/feedback`, adminAuth, async (_req, res) => {
-  if (!pool) {
-    res.status(503).type("text/html").send("<p>Database not configured.</p>");
+function requireAdminSession(req, res, next) {
+  if (!req.session?.admin) {
+    res.redirect(303, `${adminPrefixPath()}/feedback?login=required`);
     return;
   }
+  next();
+}
+
+app.get(`${adminPrefixPath()}/feedback`, async (req, res) => {
+  const base = adminPrefixPath();
+  const href = adminFeedbackHref();
+
+  if (!req.session?.admin) {
+    const failed = req.query.login === "failed";
+    const required = req.query.login === "required";
+    res
+      .status(200)
+      .type("text/html")
+      .send(
+        renderLayout({
+          title: "Admin · GyanGo",
+          metaDescription: "Sign in to the internal feedback inbox.",
+          activeNav: "admin",
+          adminHref: href,
+          extraHead: "",
+          mainHtml: renderAdminLoginContent(base, { failed, required }),
+        })
+      );
+    return;
+  }
+
+  if (!pool) {
+    res
+      .status(503)
+      .type("text/html")
+      .send(
+        renderLayout({
+          title: "Feedback · GyanGo",
+          activeNav: "admin",
+          adminHref: href,
+          extraHead: "",
+          mainHtml:
+            '<section class="section"><div class="container"><p class="lead">Database is not configured on this server.</p></div></section>',
+        })
+      );
+    return;
+  }
+
   try {
     const [listRes, countRes] = await Promise.all([
       pool.query(
@@ -261,9 +368,7 @@ app.get(`${adminPrefixPath()}/feedback`, adminAuth, async (_req, res) => {
          ORDER BY created_at DESC
          LIMIT 500`
       ),
-      pool.query(
-        `SELECT workflow_status, COUNT(*)::int AS n FROM feedback GROUP BY workflow_status`
-      ),
+      pool.query(`SELECT workflow_status, COUNT(*)::int AS n FROM feedback GROUP BY workflow_status`),
     ]);
     const rows = listRes.rows;
     const counts = { new: 0, reviewed: 0, acted: 0 };
@@ -272,22 +377,51 @@ app.get(`${adminPrefixPath()}/feedback`, adminAuth, async (_req, res) => {
       const k = raw === "reviewed" || raw === "acted" ? raw : "new";
       counts[k] = (counts[k] || 0) + Number(r.n);
     }
-    res.status(200).type("text/html").send(renderAdminFeedbackPage(rows, counts, adminPrefixPath()));
+    res
+      .status(200)
+      .type("text/html")
+      .send(
+        renderLayout({
+          title: "Feedback inbox · GyanGo",
+          metaDescription: "Internal feedback triage.",
+          activeNav: "admin",
+          adminHref: href,
+          extraHead: `<style>${getAdminInboxStyles()}</style>`,
+          mainHtml: renderAdminInboxContent(rows, counts, base),
+        })
+      );
   } catch (e) {
     console.error("[admin] list failed", e);
     res.status(500).type("text/html").send("<p>Failed to load feedback.</p>");
   }
 });
 
-app.post(`${adminPrefixPath()}/feedback/action`, adminAuth, async (req, res) => {
+app.post(`${adminPrefixPath()}/login`, (req, res) => {
+  const u = String(req.body.admin_username || "").trim();
+  const p = String(req.body.admin_password || "");
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    req.session.admin = true;
+    res.redirect(303, adminFeedbackHref());
+    return;
+  }
+  res.redirect(303, `${adminFeedbackHref()}?login=failed`);
+});
+
+app.post(`${adminPrefixPath()}/logout`, (req, res) => {
+  req.session.destroy(() => {
+    res.redirect(303, adminFeedbackHref());
+  });
+});
+
+app.post(`${adminPrefixPath()}/feedback/action`, requireAdminSession, async (req, res) => {
   if (!pool) {
-    res.redirect(303, `${adminPrefixPath()}/feedback`);
+    res.redirect(303, adminFeedbackHref());
     return;
   }
   const id = Number.parseInt(String(req.body.id || ""), 10);
   const action = String(req.body.action || "");
   if (!Number.isFinite(id) || id < 1) {
-    res.redirect(303, `${adminPrefixPath()}/feedback`);
+    res.redirect(303, adminFeedbackHref());
     return;
   }
   try {
@@ -309,7 +443,7 @@ app.post(`${adminPrefixPath()}/feedback/action`, adminAuth, async (req, res) => 
   } catch (e) {
     console.error("[admin] action failed", e);
   }
-  res.redirect(303, `${adminPrefixPath()}/feedback`);
+  res.redirect(303, adminFeedbackHref());
 });
 
 app.use(
@@ -327,7 +461,12 @@ runSqlFiles()
       if (ADMIN_USER === "admin" && ADMIN_PASS === "changeme") {
         console.warn("[app] Using default admin credentials (set ADMIN_USERNAME / ADMIN_PASSWORD on Railway)");
       }
-      console.log(`[app] Internal feedback UI → ${adminPrefixPath()}/feedback`);
+      if (process.env.TURNSTILE_SECRET_KEY && !process.env.TURNSTILE_SITE_KEY) {
+        console.warn(
+          "[app] TURNSTILE_SECRET_KEY is set without TURNSTILE_SITE_KEY; contact submissions will fail captcha until both are set."
+        );
+      }
+      console.log(`[app] Admin UI → ${adminFeedbackHref()}`);
     });
 
     async function shutdown(signal) {

@@ -43,6 +43,7 @@
           <a href="privacy-policy.html">Privacy Policy</a>
           <a href="terms.html">Terms</a>
           <a class="active" href="contact.html" aria-current="page">Contact</a>
+          <a href="/internal-sys/feedback">Admin</a>
         </nav>
       </div>
     </header>
@@ -70,7 +71,7 @@
             Use this form for general questions or product feedback. We store your submission so we can follow up and
             improve support (see note below). For sensitive topics, email us directly instead.
           </p>
-          <form class="contact-form" method="post" action="/api/feedback">
+          <form id="contact-feedback-form" class="contact-form" method="post" action="/api/feedback">
             <input type="hidden" name="source" value="contact_page">
             <div class="hp-field" aria-hidden="true">
               <label for="feedback-company">Company</label>
@@ -121,7 +122,8 @@
               operate support—not for ads. Retention follows our internal practices; ask
               <a href="mailto:privacy@gyango.com">privacy@gyango.com</a> for details or deletion requests.
             </p>
-            <button class="btn btn-primary" type="submit">Send feedback</button>
+            <div id="contact-turnstile" class="contact-turnstile" aria-live="polite"></div>
+            <button id="contact-submit" class="btn btn-primary" type="submit">Send feedback</button>
           </form>
         </section>
 
@@ -146,9 +148,86 @@
 
     <script>
       (function () {
+        function clip(s, max) {
+          if (!s) return "";
+          s = String(s).trim();
+          return s.length > max ? s.slice(0, max) : s;
+        }
+
+        function safeDecode(v) {
+          if (v == null) return "";
+          try {
+            return decodeURIComponent(String(v).replace(/\+/g, " "));
+          } catch {
+            return String(v).replace(/\+/g, " ");
+          }
+        }
+
+        var params = new URLSearchParams(window.location.search);
+        var nameIn = params.get("name");
+        var emailIn = params.get("email");
+        if (nameIn) {
+          var nameEl = document.getElementById("feedback-name");
+          if (nameEl) nameEl.value = clip(safeDecode(nameIn), 200);
+        }
+        if (emailIn) {
+          var emailEl = document.getElementById("feedback-email");
+          if (emailEl) emailEl.value = clip(safeDecode(emailIn), 254);
+        }
+
+        var form = document.getElementById("contact-feedback-form");
+        var submitBtn = document.getElementById("contact-submit");
+        var turnstileEl = document.getElementById("contact-turnstile");
+
+        fetch("/api/site-config.json")
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (cfg) {
+            var key = cfg && cfg.turnstileSiteKey;
+            if (!key || !turnstileEl || !form || !submitBtn) return;
+            submitBtn.disabled = true;
+            submitBtn.setAttribute("aria-busy", "true");
+            var s = document.createElement("script");
+            s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            s.async = true;
+            s.onerror = function () {
+              submitBtn.disabled = false;
+              submitBtn.removeAttribute("aria-busy");
+              turnstileEl.textContent =
+                "Verification could not load. Refresh the page or try again later.";
+            };
+            s.onload = function () {
+              if (!window.turnstile) {
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute("aria-busy");
+                return;
+              }
+              window.turnstile.render(turnstileEl, {
+                sitekey: key,
+                form: "#contact-feedback-form",
+                callback: function () {
+                  submitBtn.disabled = false;
+                  submitBtn.removeAttribute("aria-busy");
+                },
+                "expired-callback": function () {
+                  submitBtn.disabled = true;
+                  submitBtn.setAttribute("aria-busy", "true");
+                },
+                "error-callback": function () {
+                  submitBtn.disabled = false;
+                  submitBtn.removeAttribute("aria-busy");
+                },
+              });
+            };
+            document.head.appendChild(s);
+          })
+          .catch(function () {
+            /* optional captcha: ignore */
+          });
+
         var flash = document.getElementById("contact-flash");
         if (!flash) return;
-        var params = new URLSearchParams(window.location.search);
         var thanks = params.get("thanks");
         var err = params.get("error");
         var detail = params.get("detail") || "";
@@ -160,6 +239,9 @@
         } else if (err === "rate_limit") {
           kind = "error";
           text = "Too many submissions from this network. Please try again in a little while.";
+        } else if (err === "captcha") {
+          kind = "error";
+          text = "Please complete the verification challenge and try again.";
         } else if (err === "disabled") {
           kind = "error";
           text =
@@ -214,6 +296,7 @@
           <a href="privacy-policy.html">Privacy Policy</a>
           <a href="terms.html">Terms</a>
           <a href="contact.html">Contact</a>
+          <a href="/internal-sys/feedback">Admin</a>
         </nav>
       </div>
       <div class="container">

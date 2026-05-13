@@ -20,22 +20,30 @@ Open **http://localhost:3000** (Railway sets `PORT` in production).
 |----------|---------|
 | `GET /healthz` | Liveness |
 | `GET /` … static | Files under [`public/`](public/) (HTML, CSS, JS, images) |
+| `GET /api/site-config.json` | Public config for the browser (e.g. Turnstile site key when set) |
 | `POST /api/feedback` | Contact form submission → `feedback` table |
-| `GET /<ADMIN_BASE_PATH>/feedback` | **Internal** feedback inbox (HTTP Basic, `noindex`): compact rows, expand for full message / UA / triage (**new → reviewed → acted**) |
+| `GET /<ADMIN_BASE_PATH>/feedback` | **Internal** feedback inbox (session sign-in, `noindex`): same site header/footer as marketing pages; expand rows for full message / UA / triage (**new → reviewed → acted**) |
+| `POST /<ADMIN_BASE_PATH>/login` | Admin username/password form → session |
+| `POST /<ADMIN_BASE_PATH>/logout` | End admin session |
 
-Default admin path segment: **`internal-sys`** → e.g. `http://localhost:3000/internal-sys/feedback`
+Default admin path segment: **`internal-sys`** → e.g. `http://localhost:3000/internal-sys/feedback`. The marketing site nav includes an **Admin** link to that path; if you change `ADMIN_BASE_PATH`, update the `href` on **Admin** in the HTML under [`public/`](public/) to match.
 
-### Admin credentials (HTTP Basic)
+### Admin credentials (session)
 
-Set on Railway (do **not** ship defaults in production):
+The inbox uses an **in-page sign-in** (not browser HTTP Basic). Set on Railway (do **not** ship defaults in production):
 
 | Variable | Default (local only) |
 |----------|----------------------|
 | `ADMIN_USERNAME` | `admin` |
 | `ADMIN_PASSWORD` | `changeme` |
 | `ADMIN_BASE_PATH` | `internal-sys` (no slashes) |
+| `SESSION_SECRET` | _(required when deployed — see [`.env.example`](.env.example))_ |
 
-The server logs a warning if defaults are still in use.
+The server logs a warning if default admin username/password are still in use.
+
+### Contact form abuse protection (optional Turnstile)
+
+When **`TURNSTILE_SECRET_KEY`** and **`TURNSTILE_SITE_KEY`** are both set, the server verifies Cloudflare Turnstile on `POST /api/feedback`, and [`public/contact.html`](public/contact.html) loads the widget from `/api/site-config.json`. If only the secret is set, submissions fail until the site key is configured.
 
 ### Feedback form (`POST /api/feedback`)
 
@@ -48,6 +56,8 @@ The server logs a warning if defaults are still in use.
 | `company` | — | Honeypot (must be empty) |
 
 Also stored: `user_agent`, client IP (from `X-Forwarded-For` when present), optional **`admin_notes`**, **`archived`**, and **`workflow_status`** (`new` | `reviewed` | `acted`) for the internal inbox.
+
+**Query parameters on [`contact.html`](public/contact.html):** `?name=...` and `?email=...` pre-fill the optional fields (UTF-8, length-capped in the browser).
 
 ## SQL dumps / schema
 
@@ -71,16 +81,18 @@ Config-as-code lives in [`railway.json`](railway.json): **Railpack** build, **`n
    | Variable | Recommended |
    |----------|-------------|
    | `NODE_ENV` | `production` |
+   | `SESSION_SECRET` | Long random string (required when deployed; signs the admin session cookie) |
    | `DATABASE_URL` | Reference from Postgres (required for feedback + admin) |
    | `ALLOWED_HOSTS` | Your public hostname(s), comma-separated (e.g. `www.example.com,example.com`) — **strongly recommended** in production |
    | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Strong unique values (replace defaults) |
    | `ADMIN_BASE_PATH` | Optional; obscure path segment (default `internal-sys`) |
+   | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Optional; both required to enforce Turnstile on the contact form |
 
    **`PORT`** is set by Railway automatically — do not override unless you know why.
 
 5. **Networking:** **Settings** → **Networking** → generate a **public domain** or attach your custom domain. Put the same hostname(s) into `ALLOWED_HOSTS` if you use that guard.
 6. **Deploy:** Push to the connected branch (or **Redeploy** from the dashboard). Watch **Deploy logs** for `[db] applied 00_schema.sql` and `listening on port`.
-7. **Smoke test:** Open `/`, submit `/contact.html` feedback, then open `https://<your-host>/<ADMIN_BASE_PATH>/feedback` (Basic auth) and confirm the row appears.
+7. **Smoke test:** Open `/`, submit `/contact.html` feedback, then open `https://<your-host>/<ADMIN_BASE_PATH>/feedback`, sign in with your admin credentials, and confirm the row appears.
 8. **Optional:** Update canonical URLs in [`public/`](public/) (`og:url`, `sitemap.xml`, etc.) to match your live domain.
 
 Node version for builds is pinned via [`.node-version`](.node-version) (20.x), matching [`package.json`](package.json) `engines.node`. The marketing site and API share the **same origin** (no CORS setup for the contact form).
@@ -90,8 +102,9 @@ Node version for builds is pinned via [`.node-version`](.node-version) (20.x), m
 | Path | Role |
 |------|------|
 | [`railway.json`](railway.json) | Railway: Railpack, start command, `/healthz` health check |
-| [`index.js`](index.js) | Express: static `public/`, feedback API, admin routes |
-| [`lib/adminFeedbackHtml.js`](lib/adminFeedbackHtml.js) | Internal feedback inbox HTML (matches public site palette) |
+| [`index.js`](index.js) | Express: static `public/`, feedback API, session admin routes, optional Turnstile verify |
+| [`lib/siteChrome.js`](lib/siteChrome.js) | Shared HTML layout (header/footer) for the internal admin pages |
+| [`lib/adminFeedbackHtml.js`](lib/adminFeedbackHtml.js) | Internal feedback inbox body HTML and styles |
 | [`public/`](public/) | Static site (formerly `website/`) |
 | [`sql/`](sql/) | Schema and optional manual scripts |
 
