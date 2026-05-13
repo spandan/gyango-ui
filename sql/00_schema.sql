@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS feedback (
   user_agent text,
   ip text,
   archived boolean NOT NULL DEFAULT false,
-  admin_notes text
+  admin_notes text,
+  workflow_status text NOT NULL DEFAULT 'new'
 );
 
 CREATE INDEX IF NOT EXISTS feedback_created_at_idx ON feedback (created_at DESC);
@@ -20,3 +21,12 @@ CREATE INDEX IF NOT EXISTS feedback_archived_created_idx ON feedback (archived, 
 -- Safe upgrades when table already existed without newer columns:
 ALTER TABLE feedback ADD COLUMN IF NOT EXISTS archived boolean NOT NULL DEFAULT false;
 ALTER TABLE feedback ADD COLUMN IF NOT EXISTS admin_notes text;
+ALTER TABLE feedback ADD COLUMN IF NOT EXISTS workflow_status text NOT NULL DEFAULT 'new';
+
+UPDATE feedback SET workflow_status = 'acted' WHERE archived = true AND workflow_status <> 'acted';
+
+ALTER TABLE feedback DROP CONSTRAINT IF EXISTS feedback_workflow_status_check;
+ALTER TABLE feedback ADD CONSTRAINT feedback_workflow_status_check
+  CHECK (workflow_status IN ('new', 'reviewed', 'acted'));
+
+CREATE INDEX IF NOT EXISTS feedback_workflow_created_idx ON feedback (workflow_status, created_at DESC);

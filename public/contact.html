@@ -162,7 +162,11 @@
           text = "Too many submissions from this network. Please try again in a little while.";
         } else if (err === "disabled") {
           kind = "error";
-          text = "The feedback form is not available right now. Please use the email addresses below.";
+          text =
+            "The feedback form is turned off because the server has no database connection (DATABASE_URL). " +
+            "On Railway, add the Postgres DATABASE_URL to your web service variables. " +
+            "Locally, put DATABASE_URL in a .env file in the project root or export it before npm start. " +
+            "You can still use the email addresses below.";
         } else if (err === "server") {
           kind = "error";
           text = "Something went wrong saving your message. Please try again or email us directly.";

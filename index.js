@@ -1,9 +1,12 @@
 "use strict";
 
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+
 const fs = require("fs");
 const express = require("express");
 const { Pool } = require("pg");
+const renderAdminFeedbackPage = require("./lib/adminFeedbackHtml");
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
@@ -164,14 +167,6 @@ function adminAuth(req, res, next) {
   next();
 }
 
-function escapeHtml(s) {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 function adminPrefixPath() {
   return `/${ADMIN_BASE}`;
 }
@@ -219,6 +214,10 @@ app.post("/api/feedback", async (req, res) => {
   }
 
   if (!pool) {
+    console.warn(
+      "[feedback] DATABASE_URL is not set in this process — form submissions are disabled. " +
+        "Set DATABASE_URL on Railway (reference Postgres) or in a root .env file for local runs."
+    );
     res.redirect(303, "/contact.html?error=disabled");
     return;
   }
@@ -254,101 +253,30 @@ app.get(`${adminPrefixPath()}/feedback`, adminAuth, async (_req, res) => {
     res.status(503).type("text/html").send("<p>Database not configured.</p>");
     return;
   }
-  let rows;
   try {
-    const r = await pool.query(
-      `SELECT id, created_at, name, email, message, source, user_agent, ip, archived, admin_notes
-       FROM feedback
-       ORDER BY created_at DESC
-       LIMIT 500`
-    );
-    rows = r.rows;
+    const [listRes, countRes] = await Promise.all([
+      pool.query(
+        `SELECT id, created_at, name, email, message, source, user_agent, ip, archived, admin_notes, workflow_status
+         FROM feedback
+         ORDER BY created_at DESC
+         LIMIT 500`
+      ),
+      pool.query(
+        `SELECT workflow_status, COUNT(*)::int AS n FROM feedback GROUP BY workflow_status`
+      ),
+    ]);
+    const rows = listRes.rows;
+    const counts = { new: 0, reviewed: 0, acted: 0 };
+    for (const r of countRes.rows) {
+      const raw = r.workflow_status;
+      const k = raw === "reviewed" || raw === "acted" ? raw : "new";
+      counts[k] = (counts[k] || 0) + Number(r.n);
+    }
+    res.status(200).type("text/html").send(renderAdminFeedbackPage(rows, counts, adminPrefixPath()));
   } catch (e) {
     console.error("[admin] list failed", e);
     res.status(500).type("text/html").send("<p>Failed to load feedback.</p>");
-    return;
   }
-
-  const base = adminPrefixPath();
-  const rowsHtml = rows
-    .map((row) => {
-      const id = row.id;
-      const archived = row.archived;
-      const note = escapeHtml(row.admin_notes || "");
-      const msg = escapeHtml(row.message || "");
-      return `<tr class="${archived ? "archived" : ""}">
-  <td>${id}</td>
-  <td><time>${escapeHtml(String(row.created_at))}</time></td>
-  <td>${escapeHtml(row.name)}</td>
-  <td>${escapeHtml(row.email)}</td>
-  <td class="msg"><pre>${msg}</pre></td>
-  <td>${escapeHtml(row.source)}</td>
-  <td class="meta">${escapeHtml((row.user_agent || "").slice(0, 120))}</td>
-  <td class="meta">${escapeHtml(row.ip)}</td>
-  <td>${archived ? "yes" : "no"}</td>
-  <td>
-    <form method="post" action="${base}/feedback/action" class="inline">
-      <input type="hidden" name="id" value="${id}">
-      <input type="hidden" name="action" value="${archived ? "unarchive" : "archive"}">
-      <button type="submit">${archived ? "Unarchive" : "Archive"}</button>
-    </form>
-    <form method="post" action="${base}/feedback/action" class="stack">
-      <input type="hidden" name="id" value="${id}">
-      <input type="hidden" name="action" value="note">
-      <textarea name="admin_notes" rows="2" placeholder="Internal note">${note}</textarea>
-      <button type="submit">Save note</button>
-    </form>
-  </td>
-</tr>`;
-    })
-    .join("\n");
-
-  res
-    .status(200)
-    .type("text/html")
-    .send(`<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow">
-  <title>Feedback — internal</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f4f1; color: #1f2933; }
-    header { background: #405744; color: #fff; padding: 1rem 1.25rem; }
-    main { padding: 1rem; overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; min-width: 960px; background: #fff; }
-    th, td { border: 1px solid #daddd5; padding: 0.45rem 0.5rem; vertical-align: top; font-size: 0.85rem; }
-    th { background: #ecede8; text-align: left; }
-    tr.archived { opacity: 0.65; }
-    td.msg pre { margin: 0; white-space: pre-wrap; word-break: break-word; max-width: 420px; font: inherit; }
-    td.meta { max-width: 180px; word-break: break-all; }
-    form.inline { display: inline; }
-    form.stack { margin-top: 0.35rem; display: flex; flex-direction: column; gap: 0.25rem; }
-    textarea { width: 100%; max-width: 280px; font: inherit; }
-    button { cursor: pointer; font: inherit; padding: 0.25rem 0.5rem; }
-    .hint { font-size: 0.8rem; opacity: 0.9; margin-top: 0.35rem; }
-  </style>
-</head>
-<body>
-  <header>
-    <strong>GyanGo feedback</strong>
-    <div class="hint">HTTP Basic auth · latest 500 rows · not linked from the public site</div>
-  </header>
-  <main>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Created</th><th>Name</th><th>Email</th><th>Message</th><th>Source</th><th>UA</th><th>IP</th><th>Archived</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rowsHtml || '<tr><td colspan="10">No rows yet.</td></tr>'}
-      </tbody>
-    </table>
-  </main>
-</body>
-</html>`);
 });
 
 app.post(`${adminPrefixPath()}/feedback/action`, adminAuth, async (req, res) => {
@@ -363,7 +291,13 @@ app.post(`${adminPrefixPath()}/feedback/action`, adminAuth, async (req, res) => 
     return;
   }
   try {
-    if (action === "archive") {
+    if (action === "workflow") {
+      const ws = String(req.body.workflow_status || "");
+      if (["new", "reviewed", "acted"].includes(ws)) {
+        const archived = ws === "acted";
+        await pool.query(`UPDATE feedback SET workflow_status = $1, archived = $2 WHERE id = $3`, [ws, archived, id]);
+      }
+    } else if (action === "archive") {
       await pool.query(`UPDATE feedback SET archived = true WHERE id = $1`, [id]);
     } else if (action === "unarchive") {
       await pool.query(`UPDATE feedback SET archived = false WHERE id = $1`, [id]);
@@ -387,14 +321,29 @@ app.use(
 
 runSqlFiles()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`[app] http://localhost:${PORT}`);
+    const server = app.listen(PORT, () => {
+      console.log(`[app] listening on port ${PORT}`);
       console.log(`[app] static → ${PUBLIC_DIR}`);
       if (ADMIN_USER === "admin" && ADMIN_PASS === "changeme") {
         console.warn("[app] Using default admin credentials (set ADMIN_USERNAME / ADMIN_PASSWORD on Railway)");
       }
-      console.log(`[app] Internal feedback UI → http://localhost:${PORT}${adminPrefixPath()}/feedback`);
+      console.log(`[app] Internal feedback UI → ${adminPrefixPath()}/feedback`);
     });
+
+    async function shutdown(signal) {
+      console.log(`[app] ${signal} received, closing…`);
+      await new Promise((resolve) => server.close(resolve));
+      if (pool) {
+        try {
+          await pool.end();
+        } catch {
+          /* ignore */
+        }
+      }
+      process.exit(0);
+    }
+    process.once("SIGTERM", () => void shutdown("SIGTERM"));
+    process.once("SIGINT", () => void shutdown("SIGINT"));
   })
   .catch((err) => {
     console.error("[app] failed to start", err);
