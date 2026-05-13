@@ -3,22 +3,22 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GyanGo | Offline-First AI Tutor by Gyango</title>
+    <title>GyanGo | Safe AI on your phone</title>
     <meta
       name="description"
-      content="GyanGo is an offline-first, on-device AI tutor for kids and curious learners. Privacy-by-design, safety-first, and voice, text, and optional image support."
+      content="GyanGo is a privacy-first AI guide for learning, curiosity, voice, and everyday questions."
     >
-    <meta name="theme-color" content="#0d1b2a">
-    <meta property="og:title" content="GyanGo | Offline-First AI Tutor">
+    <meta name="theme-color" content="#6f8f72">
+    <meta property="og:title" content="GyanGo | Safe AI on your phone">
     <meta
       property="og:description"
-      content="A privacy-first AI tutor for kids and curious learners, designed for safe learning with on-device intelligence."
+      content="GyanGo is a privacy-first AI guide for learning, curiosity, voice, and everyday questions."
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.gyango.com/">
-    <meta property="og:image" content="https://www.gyango.com/assets/img/gyango-logo.svg">
+    <meta property="og:image" content="https://www.gyango.com/assets/img/gyangoAI.webp">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/styles.css">
     <script defer src="assets/js/main.js"></script>
   </head>
   <body>
@@ -26,10 +26,16 @@
     <header class="site-header">
       <div class="container nav-wrap">
         <a class="brand" href="index.html" aria-label="GyanGo home">
-          <img src="assets/img/gyango-logo.svg" alt="GyanGo logo">
+          <img src="assets/img/gyangoAI.webp" alt="GyanGo logo">
           <span>GyanGo</span>
         </a>
-        <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Open menu"
+        >
           Menu
         </button>
         <nav id="site-nav" class="site-nav" aria-label="Main navigation">
@@ -42,70 +48,126 @@
     </header>
 
     <main id="main-content">
-      <section class="hero">
-        <div class="container hero-grid">
-          <div>
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="container">
+          <div class="hero__inner">
             <p class="eyebrow">By Gyango</p>
-            <h1>Learning support that stays private and close to your family.</h1>
+            <h1 id="hero-heading">Safe AI on your phone</h1>
             <p class="lead">
-              GyanGo is an offline-first, on-device AI tutor for kids and curious learners.
-              Built with privacy-by-design and safety-first principles.
+              Ask questions, use voice, simplify information, and explore ideas with a privacy-first AI guide designed to stay close to your device.
+            </p>
+            <p class="positioning">
+              GyanGo is a safe, privacy-first AI guide for learning, curiosity, voice, and everyday questions.
             </p>
             <div class="cta-row">
-              <a class="btn btn-primary" href="contact.html">Get in touch</a>
-              <a class="btn btn-secondary" href="privacy-policy.html">View Privacy Policy</a>
+              <a class="btn btn-primary" href="privacy-policy.html">View Privacy Policy</a>
+              <a class="btn btn-secondary" href="contact.html">Contact Us</a>
             </div>
-          </div>
-          <div class="hero-card" aria-label="Key trust highlights">
-            <h2>Why families trust GyanGo</h2>
-            <ul>
-              <li>Offline-first architecture for better control.</li>
-              <li>On-device processing wherever possible.</li>
-              <li>Safety-minded features for younger users.</li>
-              <li>Clear privacy and permission choices.</li>
+            <ul class="trust-badges" role="list">
+              <li><span class="trust-badge">On-device first</span></li>
+              <li><span class="trust-badge">Voice + text</span></li>
+              <li><span class="trust-badge">Privacy controls</span></li>
+              <li><span class="trust-badge">Safe Mode</span></li>
             </ul>
           </div>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section section--soft" aria-labelledby="features-heading">
         <div class="container">
-          <h2>What GyanGo is</h2>
-          <p>
-            GyanGo is designed to support independent learning, homework help, and curiosity-driven
-            exploration. It is built for children and learners of all ages who benefit from a calm,
-            guided tutor experience.
+          <h2 id="features-heading" class="section-title">Built for everyday learning and curiosity</h2>
+          <p class="section-lead">
+            Straightforward tools for questions, voice, tasks, and optional images—with clear privacy choices.
           </p>
+          <div class="feature-grid">
+            <article class="lift-card">
+              <h3>Ask GyanGo</h3>
+              <p>Ask everyday questions and get simple, helpful explanations.</p>
+            </article>
+            <article class="lift-card">
+              <h3>Voice and Text</h3>
+              <p>Speak or type naturally depending on what feels easiest.</p>
+            </article>
+            <article class="lift-card">
+              <h3>Smart Tasks</h3>
+              <p>Simplify, translate, ask more, draft replies, and extract useful details.</p>
+            </article>
+            <article class="lift-card">
+              <h3>On-device First</h3>
+              <p>Designed to support local AI experiences whenever possible.</p>
+            </article>
+            <article class="lift-card">
+              <h3>Privacy Controls</h3>
+              <p>Clear choices for permissions, diagnostics, and app settings.</p>
+            </article>
+            <article class="lift-card">
+              <h3>Image Explanation</h3>
+              <p>Use optional image input for clear English text when you choose to provide a photo.</p>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section class="section alt">
+      <section class="section" id="privacy" aria-labelledby="privacy-heading">
         <div class="container">
-          <h2>Why offline-first matters</h2>
-          <p>
-            Offline-first design reduces dependency on always-on internet and helps keep sensitive
-            interactions close to the learner's device. This approach supports privacy, resilience,
-            and smoother learning in low-connectivity environments.
-          </p>
+          <h2 id="privacy-heading" class="section-title">Privacy-first by design</h2>
+          <p class="section-lead">We aim to collect only what the product needs—and to be transparent about optional diagnostics.</p>
+          <div class="two-col-cards">
+            <article class="lift-card">
+              <h3>What GyanGo avoids collecting</h3>
+              <ul class="privacy-list">
+                <li>Your questions</li>
+                <li>Chat history</li>
+                <li>AI responses</li>
+                <li>Photos</li>
+                <li>Voice recordings</li>
+                <li>Personal learning content</li>
+              </ul>
+            </article>
+            <article class="lift-card">
+              <h3>Optional diagnostics</h3>
+              <ul class="privacy-list">
+                <li>App opens</li>
+                <li>Feature usage</li>
+                <li>Crash reports</li>
+                <li>Performance timing</li>
+                <li>Device type and Android version</li>
+              </ul>
+            </article>
+          </div>
+          <p class="section-note">Anonymous diagnostics can be controlled from app settings.</p>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section section--soft" aria-labelledby="safety-heading">
         <div class="container">
-          <h2>Safety for children</h2>
-          <p>
-            Child safety informs our product decisions. We aim for age-appropriate educational use,
-            transparent data handling, and parental clarity around permissions and controls.
-          </p>
+          <h2 id="safety-heading" class="section-title">Designed for a safer AI experience</h2>
+          <div class="safety-block">
+            <p>
+              GyanGo is built with simple explanations, safer interaction patterns, and privacy-minded choices. It supports learning and curiosity, but does not replace parents, teachers, or professional guidance.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section class="section alt">
+      <section class="section" aria-labelledby="use-cases-heading">
         <div class="container">
-          <h2>Voice, text, and optional image input</h2>
-          <p>
-            Learners can interact by speaking or typing. Optional image understanding is only used
-            when a user chooses to provide a photo or camera input for a specific learning task.
+          <h2 id="use-cases-heading" class="section-title">Useful for everyday moments</h2>
+          <div class="use-case-grid">
+            <div class="use-case-card">Ask a quick question</div>
+            <div class="use-case-card">Simplify a paragraph</div>
+            <div class="use-case-card">Translate text</div>
+            <div class="use-case-card">Draft a reply</div>
+            <div class="use-case-card">Learn through voice</div>
+            <div class="use-case-card">Explore safely</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--tight-bottom" aria-label="Disclaimer">
+        <div class="container">
+          <p class="disclaimer">
+            <strong>Note.</strong> AI responses may occasionally be incomplete or inaccurate. Use adult guidance for younger users.
           </p>
         </div>
       </section>
@@ -115,7 +177,7 @@
       <div class="container footer-grid">
         <div>
           <strong>GyanGo</strong>
-          <p>Offline-first AI tutor by Gyango.</p>
+          <p class="tagline">GyanGo is a privacy-first AI guide by Gyango.</p>
         </div>
         <nav aria-label="Footer navigation">
           <a href="index.html">Home</a>
@@ -125,7 +187,7 @@
         </nav>
       </div>
       <div class="container">
-        <p class="small">© <span class="js-year"></span> Gyango. All rights reserved.</p>
+        <p class="small copyright">© <span class="js-year"></span> Gyango. All rights reserved.</p>
       </div>
     </footer>
   </body>

@@ -15,9 +15,10 @@
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.gyango.com/terms.html">
-    <meta property="og:image" content="https://www.gyango.com/assets/img/gyango-logo.svg">
+    <meta property="og:image" content="https://www.gyango.com/assets/img/gyangoAI.webp">
+    <meta name="theme-color" content="#6f8f72">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/styles.css">
     <script defer src="assets/js/main.js"></script>
   </head>
   <body>
@@ -25,10 +26,16 @@
     <header class="site-header">
       <div class="container nav-wrap">
         <a class="brand" href="index.html" aria-label="GyanGo home">
-          <img src="assets/img/gyango-logo.svg" alt="GyanGo logo">
+          <img src="assets/img/gyangoAI.webp" alt="GyanGo logo">
           <span>GyanGo</span>
         </a>
-        <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Open menu"
+        >
           Menu
         </button>
         <nav id="site-nav" class="site-nav" aria-label="Main navigation">
@@ -40,7 +47,7 @@
       </div>
     </header>
 
-    <main id="main-content" class="section">
+    <main id="main-content" class="page-main">
       <div class="container prose">
         <h1>Terms of Use</h1>
         <p class="meta">Effective date: April 20, 2026</p>
@@ -109,7 +116,7 @@
       <div class="container footer-grid">
         <div>
           <strong>GyanGo</strong>
-          <p>Offline-first AI tutor by Gyango.</p>
+          <p class="tagline">GyanGo is a privacy-first AI guide by Gyango.</p>
         </div>
         <nav aria-label="Footer navigation">
           <a href="index.html">Home</a>
@@ -119,7 +126,7 @@
         </nav>
       </div>
       <div class="container">
-        <p class="small">© <span class="js-year"></span> Gyango. All rights reserved.</p>
+        <p class="small copyright">© <span class="js-year"></span> Gyango. All rights reserved.</p>
       </div>
     </footer>
   </body>

@@ -3,21 +3,22 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Privacy Policy | GyanGo by Gyango</title>
+    <title>Privacy Policy for GyanGo | Gyango</title>
     <meta
       name="description"
-      content="Read how GyanGo protects learner privacy with offline-first, safety-first practices and clear permissions."
+      content="How GyanGo handles on-device and network data, Android permissions, optional Firebase diagnostics, Play Billing, retention, and contact information."
     >
-    <meta property="og:title" content="Privacy Policy | GyanGo">
+    <meta property="og:title" content="Privacy Policy for GyanGo">
     <meta
       property="og:description"
-      content="Learn how GyanGo handles permissions, data use, retention, sharing, and child safety."
+      content="On-device tutoring, declared permissions, optional anonymous diagnostics, subscriptions, retention, children and safety, and how to contact Gyango."
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.gyango.com/privacy-policy.html">
-    <meta property="og:image" content="https://www.gyango.com/assets/img/gyango-logo.svg">
+    <meta property="og:image" content="https://www.gyango.com/assets/img/gyangoAI.webp">
+    <meta name="theme-color" content="#6f8f72">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/styles.css">
     <script defer src="assets/js/main.js"></script>
   </head>
   <body>
@@ -25,10 +26,16 @@
     <header class="site-header">
       <div class="container nav-wrap">
         <a class="brand" href="index.html" aria-label="GyanGo home">
-          <img src="assets/img/gyango-logo.svg" alt="GyanGo logo">
+          <img src="assets/img/gyangoAI.webp" alt="GyanGo logo">
           <span>GyanGo</span>
         </a>
-        <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Open menu"
+        >
           Menu
         </button>
         <nav id="site-nav" class="site-nav" aria-label="Main navigation">
@@ -40,104 +47,194 @@
       </div>
     </header>
 
-    <main id="main-content" class="section">
+    <main id="main-content" class="page-main">
       <div class="container prose">
-        <h1>Privacy Policy</h1>
-        <p class="meta">Effective date: April 20, 2026</p>
+        <h1>Privacy Policy for GyanGo</h1>
+        <p class="meta">
+          <strong>Last updated:</strong> May 12, 2026<br>
+          <strong>App name:</strong> GyanGo<br>
+          <strong>Package name:</strong> <code>ai.gyango</code><br>
+          <strong>Publisher:</strong> Gyango
+        </p>
         <p>
-          This Privacy Policy explains how Gyango ("we", "us", "our") handles personal data for
-          GyanGo (package: <code>ai.gyango</code>). GyanGo is an offline-first, on-device AI tutor
-          built for kids and curious learners.
+          This Privacy Policy describes how Gyango (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) handles information when you use the GyanGo Android app. You can host this page on your website; align your Google Play <strong>Data safety</strong> form and any in-app disclosures with the same facts for each release.
         </p>
 
-        <h2>1. Core privacy approach</h2>
+        <hr>
+
+        <h2>1) Overview</h2>
         <p>
-          We design GyanGo to work offline-first and process learning interactions on the device
-          wherever possible. We aim to minimize data collection and give users clear control over
-          app permissions and data choices.
+          GyanGo is an <strong>offline-first</strong> AI learning assistant. We design the app so that <strong>core tutoring and model inference run on your device</strong> wherever the product is built to do so.
+        </p>
+        <p>
+          Some features use the <strong>internet</strong> (for example <strong>Google Play subscriptions</strong>, <strong>optional anonymous diagnostics</strong> when you turn them on, and flows you start explicitly). This policy explains what may be processed on-device, what may go over the network, and what <strong>Android permissions</strong> the app declares.
         </p>
 
-        <h2>2. Permissions we request</h2>
-        <p>GyanGo may request certain Android permissions to enable specific features:</p>
+        <hr>
+
+        <h2>2) Information you provide or that the app processes</h2>
+        <p>Depending on how you use GyanGo, we may process:</p>
         <ul>
           <li>
-            <strong>Microphone</strong> (<code>android.permission.RECORD_AUDIO</code>): used only
-            when the user chooses voice interaction.
+            <strong>Text</strong> you type or paste, and <strong>text shared into the app</strong> from other apps (for example via Android &ldquo;Share&rdquo; or &ldquo;Ask GyanGo&rdquo; / process-text style entry points where supported), to generate learning responses.
           </li>
           <li>
-            <strong>Camera or photos</strong>: used only when the user intentionally captures or
-            selects an image for learning features.
+            <strong>Voice audio</strong> when you choose voice input, for speech-to-text and tutoring.
+          </li>
+          <li>
+            <strong>Images or previews</strong> you <strong>explicitly</strong> attach using the system photo picker, share into the app as an image, or otherwise select for features such as image explanation or on-device text recognition&mdash;<strong>only in connection with that user action</strong>, not in the background.
+          </li>
+          <li>
+            <strong>Calendar-related information</strong> only when you <strong>explicitly</strong> use a flow that reads or writes calendar data (for example adding a suggested event). We do not use calendar access for unrelated background profiling.
+          </li>
+          <li>
+            <strong>Device and app technical data</strong> when you <strong>opt in</strong> to anonymous diagnostics (see section 5)&mdash;limited to what the app is designed to send, not your lesson text (see section 5).
+          </li>
+        </ul>
+
+        <hr>
+
+        <h2>3) Android permissions declared in the app manifest</h2>
+        <p>The GyanGo app declares the following permissions (as shipped in our source manifest):</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Permission</th>
+                <th scope="col">Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>android.permission.INTERNET</code></td>
+                <td>Network features you use or enable (for example Play subscription checks, optional diagnostics uploads, and other online flows).</td>
+              </tr>
+              <tr>
+                <td><code>android.permission.ACCESS_NETWORK_STATE</code></td>
+                <td>Detect connectivity (for example to gate optional diagnostics and other network-aware behavior).</td>
+              </tr>
+              <tr>
+                <td><code>android.permission.RECORD_AUDIO</code></td>
+                <td><strong>Optional voice input</strong> only when you use voice features (for example after tapping a microphone control). You can deny this and use text.</td>
+              </tr>
+              <tr>
+                <td><code>android.permission.READ_CALENDAR</code></td>
+                <td><strong>Only</strong> when you use a feature that legitimately needs to read calendar data you choose to interact with.</td>
+              </tr>
+              <tr>
+                <td><code>android.permission.WRITE_CALENDAR</code></td>
+                <td><strong>Only</strong> when you choose to create or update calendar entries from supported flows (for example saving a suggested date).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          You can <strong>grant, deny, or revoke</strong> these permissions in <strong>Android Settings</strong> at any time. If you deny a permission, related features may not work; other features may still be available.
+        </p>
+        <p>
+          <strong>Photos and camera:</strong> Our shipping app manifest <strong>does not declare</strong> <code>android.permission.CAMERA</code>. Image features rely on <strong>user-initiated</strong> flows such as the <strong>system photo picker</strong>, <strong>sharing an image into GyanGo</strong>, or similar. Your device may still offer a camera as part of the <strong>system UI</strong>; that is controlled by Android and your device vendor, not by GyanGo accessing the camera continuously in the background.
+        </p>
+
+        <hr>
+
+        <h2>4) How we use this information</h2>
+        <p>We use the information above to:</p>
+        <ul>
+          <li>provide AI-assisted learning responses and related features you request;</li>
+          <li>run speech-to-text when you use voice input;</li>
+          <li>run on-device analysis of images or extracted text when you choose those features;</li>
+          <li>perform optional calendar actions when you choose them;</li>
+          <li>maintain <strong>safety</strong>, <strong>stability</strong>, and <strong>quality</strong> of the app;</li>
+          <li>operate <strong>subscriptions</strong> and <strong>optional diagnostics</strong> as described below.</li>
+        </ul>
+
+        <hr>
+
+        <h2>5) Optional anonymous diagnostics (Firebase)</h2>
+        <p>
+          GyanGo can use <strong>Google Firebase Analytics</strong> and <strong>Google Firebase Crashlytics</strong> for <strong>anonymous diagnostics</strong>.
+        </p>
+        <ul>
+          <li>
+            <strong>Default:</strong> For new installs, <strong>anonymous diagnostics are off</strong> until you turn them on in app <strong>Settings</strong> (&ldquo;Share anonymous diagnostics&rdquo; or equivalent). The app stores this choice locally (DataStore key <code>anonymous_diagnostics_enabled</code>).
+          </li>
+          <li>
+            <strong>What we aim to send:</strong> Coarse <strong>event names</strong> and <strong>short, non-content parameters</strong> (for example app version, device model, success flags, durations)&mdash;<strong>not</strong> your chat text, prompts, model answers, photos, OCR text, voice recordings, or transcripts. Crash reports may include <strong>stack traces</strong> and limited <strong>device/app metadata</strong> for debugging.
+          </li>
+          <li>
+            <strong>Custom analytics and Wi-Fi:</strong> <strong>Custom</strong> analytics events are sent <strong>only</strong> when diagnostics are <strong>on</strong>, the preference has been applied, and the device reports <strong>Wi-Fi or Ethernet</strong> (custom events are not sent on cellular in this design; they are dropped rather than queued with user content).
+          </li>
+          <li>
+            <strong>Crashlytics:</strong> The app <strong>disables Crashlytics collection</strong> when diagnostics are off or when the device is not on Wi-Fi/Ethernet, aligned with the same product gating as Analytics. <strong>Native crash handling</strong> can still vary by Android version or SDK behavior; we do <strong>not</strong> attach user-generated lesson text as Crashlytics custom keys.
           </li>
         </ul>
         <p>
-          If you do not grant these permissions, those optional features may not work, but core app
-          functions may still be available.
+          Third-party SDKs (including Google&rsquo;s) may process data under <strong>their</strong> policies. Declare <strong>Firebase Analytics</strong> and <strong>Firebase Crashlytics</strong> in Google Play&rsquo;s <strong>Data safety</strong> section and match declarations to <strong>what you actually ship</strong>. Merged dependencies may add other disclosures (for example identifiers); review the <strong>merged manifest</strong> for each release.
         </p>
 
-        <h2>3. Camera and photo usage</h2>
+        <hr>
+
+        <h2>6) Subscriptions and Google Play</h2>
         <p>
-          GyanGo does not continuously access camera or photos. Camera/photo access happens only on
-          user action, such as tapping an upload or capture button for an image-based learning task.
+          Paid or trial access may be offered through <strong>Google Play Billing</strong>. <strong>Google</strong> processes payments and subscription state; we receive what is needed to <strong>unlock features</strong> in the app according to your purchase. For how Google handles billing data, see Google&rsquo;s privacy documentation.
         </p>
 
-        <h2>4. Denying or revoking permissions</h2>
+        <hr>
+
+        <h2>7) Data sharing and selling</h2>
+        <p>We <strong>do not sell</strong> your personal information.</p>
         <p>
-          You can deny permissions when prompted and can later revoke them in Android Settings at
-          any time. To change access, open your device settings, find GyanGo in app permissions, and
-          update the permission choices.
+          We may share information with <strong>service providers</strong> that help us run the app or comply with law&mdash;for example <strong>Google</strong> (Play, Firebase), hosting, or support tools&mdash;under appropriate agreements and safeguards. We may also disclose information <strong>if required by law</strong> or to <strong>protect users, children, or our rights</strong>.
         </p>
 
-        <h2>5. What data we use and why</h2>
-        <p>Depending on how you use the app, we may process:</p>
+        <hr>
+
+        <h2>8) Data retention</h2>
         <ul>
-          <li>Voice or text input you provide to generate tutoring responses.</li>
-          <li>Optional image input when you choose image understanding features.</li>
-          <li>Basic app diagnostics needed for reliability and security.</li>
+          <li>
+            <strong>On your device:</strong> Conversation or app data remains until you delete it inside the app or <strong>clear app data / uninstall</strong> in Android settings.
+          </li>
+          <li>
+            <strong>With service providers:</strong> Data is retained as long as needed for the purposes above, <strong>legal obligations</strong>, or <strong>security</strong>, and we aim to limit retention where practical.
+          </li>
         </ul>
+
+        <hr>
+
+        <h2>9) Children and safety</h2>
         <p>
-          We use this information to provide educational responses, improve safety and reliability,
-          and maintain app quality.
+          GyanGo is built with <strong>children and families</strong> in mind. Parents and guardians should <strong>supervise</strong> younger users, review <strong>permissions</strong> and <strong>Settings</strong> (including diagnostics), and use device parental controls as appropriate.
+        </p>
+        <p>
+          If you believe a child has shared personal information inappropriately, contact us (section 12) and we will review the request.
         </p>
 
-        <h2>6. Data retention</h2>
+        <hr>
+
+        <h2>10) Security</h2>
         <p>
-          We retain data only for as long as needed for the purposes described in this policy, legal
-          obligations, or security needs. Where practical, we limit retention and delete or
-          de-identify data when it is no longer required.
+          We use reasonable <strong>technical and organizational</strong> measures to protect information. No method of transmission or storage is completely risk-free; we work to reduce risk and improve safeguards over time.
         </p>
 
-        <h2>7. Data sharing</h2>
+        <hr>
+
+        <h2>11) Changes to this Privacy Policy</h2>
         <p>
-          We do not sell personal data. We may share limited information with service providers who
-          help us operate GyanGo (for example hosting or support tooling), under contractual
-          safeguards. We may also share data when required by law or to protect users and our rights.
+          We may update this policy when the app or legal requirements change. We will adjust the <strong>Last updated</strong> date at the top when we publish a new version. <strong>Material changes</strong> may also be reflected in the app or Play Store listing where appropriate.
         </p>
 
-        <h2>8. Security</h2>
-        <p>
-          We apply reasonable technical and organizational safeguards to protect data, including
-          access controls and security-oriented engineering practices. No method of storage or
-          transmission is fully risk-free, but we work to reduce risk.
-        </p>
+        <hr>
 
-        <h2>9. Children and family use</h2>
-        <p>
-          GyanGo is intended for educational use with safety in mind. Parents and guardians should
-          review app settings and supervise younger users. If you believe a child has provided
-          personal data inappropriately, contact us and we will review and address the request.
-        </p>
+        <h2>12) Contact</h2>
+        <ul>
+          <li><strong>Privacy:</strong> <a href="mailto:privacy@gyango.com">privacy@gyango.com</a></li>
+          <li><strong>General support:</strong> <a href="mailto:support@gyango.com">support@gyango.com</a></li>
+        </ul>
 
-        <h2>10. Changes to this policy</h2>
-        <p>
-          We may update this Privacy Policy as the app evolves or legal requirements change. When we
-          make material updates, we will revise the effective date and publish the latest policy on
-          this page.
-        </p>
+        <hr>
 
-        <h2>11. Contact us</h2>
-        <p>
-          Privacy questions: <a href="mailto:privacy@gyango.com">privacy@gyango.com</a><br>
-          General support: <a href="mailto:support@gyango.com">support@gyango.com</a>
+        <p class="small">
+          <em>This document is intended to describe the product&rsquo;s engineering and privacy posture accurately. It is not legal advice; have qualified counsel review before relying on it for compliance.</em>
         </p>
       </div>
     </main>
@@ -146,7 +243,7 @@
       <div class="container footer-grid">
         <div>
           <strong>GyanGo</strong>
-          <p>Offline-first AI tutor by Gyango.</p>
+          <p class="tagline">GyanGo is a privacy-first AI guide by Gyango.</p>
         </div>
         <nav aria-label="Footer navigation">
           <a href="index.html">Home</a>
@@ -156,7 +253,7 @@
         </nav>
       </div>
       <div class="container">
-        <p class="small">© <span class="js-year"></span> Gyango. All rights reserved.</p>
+        <p class="small copyright">© <span class="js-year"></span> Gyango. All rights reserved.</p>
       </div>
     </footer>
   </body>
