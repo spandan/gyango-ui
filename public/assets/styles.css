@@ -563,22 +563,109 @@ code {
   text-align: center;
 }
 
+.contact-flash {
+  margin: 0 auto 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.96rem;
+  line-height: 1.45;
+  max-width: 640px;
+}
+
+.contact-flash--hidden {
+  display: none !important;
+}
+
+.contact-flash--success {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+  color: var(--accent-dark);
+}
+
+.contact-flash--error {
+  background: #fdf8f5;
+  border: 1px solid #e5d5cd;
+  color: #4a3d38;
+}
+
 .contact-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 2rem 1.75rem;
   box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+}
+
+.contact-card--secondary {
   margin-bottom: 3rem;
 }
 
-.contact-card h1 {
-  margin-bottom: 0.75rem;
+.contact-section-heading {
+  font-size: 1.22rem;
+  margin: 0 0 0.65rem;
+  color: var(--ink);
 }
 
-.contact-card > p {
+.contact-form-intro {
+  margin: 0 0 1.25rem;
   color: var(--muted);
-  margin-top: 0;
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+  position: relative;
+}
+
+.contact-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--ink);
+}
+
+.contact-form .optional,
+.contact-form .required {
+  font-weight: 500;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.contact-form .required {
+  color: var(--accent-dark);
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.contact-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.contact-form-privacy {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .contact-emails {
@@ -586,6 +673,12 @@ code {
   padding: 1.25rem 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+}
+
+.contact-card--secondary .contact-emails {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .contact-emails p {

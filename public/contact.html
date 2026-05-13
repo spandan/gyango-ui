@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact GyanGo | Gyango</title>
+    <meta
+      name="description"
+      content="Contact the GyanGo team for questions, suggestions, or support. Privacy-first AI guide by Gyango."
+    >
+    <meta name="theme-color" content="#6f8f72">
+    <meta property="og:title" content="Contact GyanGo">
+    <meta
+      property="og:description"
+      content="Reach the GyanGo team for questions, suggestions, or issues."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.gyango.com/contact.html">
+    <meta property="og:image" content="https://www.gyango.com/assets/img/gyangoAI.webp">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="assets/styles.css">
+    <script defer src="assets/js/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html" aria-label="GyanGo home">
+          <img src="assets/img/gyangoAI.webp" alt="GyanGo logo">
+          <span>GyanGo</span>
+        </a>
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Open menu"
+        >
+          Menu
+        </button>
+        <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms.html">Terms</a>
+          <a class="active" href="contact.html" aria-current="page">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <div class="contact-hero">
+        <div class="container container--narrow">
+          <h1>Contact GyanGo</h1>
+          <p class="lead">Have a question, suggestion, or issue? Reach out to the GyanGo team.</p>
+        </div>
+      </div>
+
+      <div class="container container--narrow">
+        <div
+          id="contact-flash"
+          class="contact-flash contact-flash--hidden"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+
+        <section class="contact-card" aria-labelledby="feedback-form-title">
+          <h2 id="feedback-form-title" class="contact-section-heading">Send feedback</h2>
+          <p class="contact-form-intro">
+            Use this form for general questions or product feedback. We store your submission so we can follow up and
+            improve support (see note below). For sensitive topics, email us directly instead.
+          </p>
+          <form class="contact-form" method="post" action="/api/feedback">
+            <input type="hidden" name="source" value="contact_page">
+            <div class="hp-field" aria-hidden="true">
+              <label for="feedback-company">Company</label>
+              <input
+                id="feedback-company"
+                name="company"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+              >
+            </div>
+            <div>
+              <label for="feedback-name">Name <span class="optional">(optional)</span></label>
+              <input
+                id="feedback-name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                maxlength="200"
+                placeholder="Your name"
+              >
+            </div>
+            <div>
+              <label for="feedback-email">Email <span class="optional">(optional)</span></label>
+              <input
+                id="feedback-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="254"
+                placeholder="you@example.com"
+              >
+            </div>
+            <div>
+              <label for="feedback-message">Message <span class="required">(required)</span></label>
+              <textarea
+                id="feedback-message"
+                name="message"
+                required
+                maxlength="5000"
+                rows="6"
+                placeholder="How can we help?"
+              ></textarea>
+            </div>
+            <p class="contact-form-privacy">
+              <strong>What we store from this form:</strong> your message, optional name and email, time sent, and
+              basic technical details (browser type and network address) to reduce abuse. We use this only to respond and
+              operate support—not for ads. Retention follows our internal practices; ask
+              <a href="mailto:privacy@gyango.com">privacy@gyango.com</a> for details or deletion requests.
+            </p>
+            <button class="btn btn-primary" type="submit">Send feedback</button>
+          </form>
+        </section>
+
+        <section class="contact-card contact-card--secondary" aria-label="Email contact">
+          <h2 class="contact-section-heading">Email us instead</h2>
+          <div class="contact-emails">
+            <p>
+              General support<br>
+              <a href="mailto:support@gyango.com">support@gyango.com</a>
+            </p>
+            <p>
+              Privacy<br>
+              <a href="mailto:privacy@gyango.com">privacy@gyango.com</a>
+            </p>
+          </div>
+          <p class="contact-warning">
+            Please do not send private chats, photos, voice recordings, or personal learning content through email.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var flash = document.getElementById("contact-flash");
+        if (!flash) return;
+        var params = new URLSearchParams(window.location.search);
+        var thanks = params.get("thanks");
+        var err = params.get("error");
+        var detail = params.get("detail") || "";
+        var text = "";
+        var kind = "";
+        if (thanks === "1") {
+          kind = "success";
+          text = "Thanks — we received your message.";
+        } else if (err === "rate_limit") {
+          kind = "error";
+          text = "Too many submissions from this network. Please try again in a little while.";
+        } else if (err === "disabled") {
+          kind = "error";
+          text = "The feedback form is not available right now. Please use the email addresses below.";
+        } else if (err === "server") {
+          kind = "error";
+          text = "Something went wrong saving your message. Please try again or email us directly.";
+        } else if (err === "referer") {
+          kind = "error";
+          text = "We could not verify your request. Please submit the form from this page.";
+        } else if (err === "validation") {
+          kind = "error";
+          if (detail === "message_too_short") {
+            text = "Please enter a longer message (at least a few characters).";
+          } else if (detail === "message_too_long") {
+            text = "Your message is too long. Please shorten it and try again.";
+          } else if (detail === "email_invalid") {
+            text = "That email address does not look valid. Fix it or leave email blank.";
+          } else {
+            text = "Please check the form and try again.";
+          }
+        }
+        if (!text) return;
+        flash.textContent = text;
+        flash.hidden = false;
+        flash.classList.remove("contact-flash--hidden");
+        flash.classList.add(kind === "success" ? "contact-flash--success" : "contact-flash--error");
+        flash.setAttribute("role", kind === "success" ? "status" : "alert");
+        if (kind === "success") {
+          flash.removeAttribute("aria-live");
+          flash.setAttribute("aria-live", "polite");
+        } else {
+          flash.setAttribute("aria-live", "assertive");
+        }
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      })();
+    </script>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <strong>GyanGo</strong>
+          <p class="tagline">GyanGo is a privacy-first AI guide by Gyango.</p>
+        </div>
+        <nav aria-label="Footer navigation">
+          <a href="index.html">Home</a>
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms.html">Terms</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+      <div class="container">
+        <p class="small copyright">© <span class="js-year"></span> Gyango. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

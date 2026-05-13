@@ -1,0 +1,2 @@
+-- Optional: wipe all feedback rows (destructive). Do not run in production unless you intend to.
+-- TRUNCATE feedback RESTART IDENTITY CASCADE;
