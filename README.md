@@ -22,11 +22,16 @@ Open **http://localhost:3000** (Railway sets `PORT` in production).
 | `GET /` … static | Files under [`public/`](public/) (HTML, CSS, JS, images) |
 | `GET /api/site-config.json` | Public config for the browser (e.g. Turnstile site key when set) |
 | `POST /api/feedback` | Contact form submission → `feedback` table |
-| `GET /<ADMIN_BASE_PATH>/feedback` | **Internal** feedback inbox (session sign-in, `noindex`): same site header/footer as marketing pages; expand rows for full message / UA / triage (**new → reviewed → acted**) |
+| `GET /<ADMIN_BASE_PATH>/admin` | **Internal** feedback inbox (session sign-in, `noindex`): same site header/footer as marketing pages |
+| `GET /<ADMIN_BASE_PATH>/feedback` | **301 →** `/admin` (old bookmarks only) |
+| `GET /<ADMIN_BASE_PATH>` | Redirects to `/admin` |
 | `POST /<ADMIN_BASE_PATH>/login` | Admin username/password form → session |
 | `POST /<ADMIN_BASE_PATH>/logout` | End admin session |
+| `POST /<ADMIN_BASE_PATH>/feedback/action` | Inbox triage (workflow, notes, archive; session required) |
 
-Default admin path segment: **`internal-sys`** → e.g. `http://localhost:3000/internal-sys/feedback`. The marketing site nav includes an **Admin** link to that path; if you change `ADMIN_BASE_PATH`, update the `href` on **Admin** in the HTML under [`public/`](public/) to match.
+Default admin path segment: **`internal-sys`** → e.g. `http://localhost:3000/internal-sys/admin`. The marketing site **Admin** link targets that URL. If you change `ADMIN_BASE_PATH`, update the `href` on **Admin** in the HTML under [`public/`](public/) to match.
+
+Triage actions post to **`POST /<ADMIN_BASE_PATH>/feedback/action`** (HTML forms from the inbox only).
 
 If production still shows **HTTP Basic** or a **“← Public site”** link with no marketing header, the live service is running an **older build**—redeploy from this repository so the session sign-in and shared [`lib/siteChrome.js`](lib/siteChrome.js) layout apply.
 
@@ -94,7 +99,7 @@ Config-as-code lives in [`railway.json`](railway.json): **Railpack** build, **`n
 
 5. **Networking:** **Settings** → **Networking** → generate a **public domain** or attach your custom domain. Put the same hostname(s) into `ALLOWED_HOSTS` if you use that guard.
 6. **Deploy:** Push to the connected branch (or **Redeploy** from the dashboard). Watch **Deploy logs** for `[db] applied 00_schema.sql` and `listening on port`.
-7. **Smoke test:** Open `/`, submit `/contact.html` feedback, then open `https://<your-host>/<ADMIN_BASE_PATH>/feedback`, sign in with your admin credentials, and confirm the row appears.
+7. **Smoke test:** Open `/`, submit `/contact.html` feedback, then open `https://<your-host>/<ADMIN_BASE_PATH>/admin`, sign in with your admin credentials, and confirm the row appears.
 8. **Optional:** Update canonical URLs in [`public/`](public/) (`og:url`, `sitemap.xml`, etc.) to match your live domain.
 
 Node version for builds is pinned via [`.node-version`](.node-version) (20.x), matching [`package.json`](package.json) `engines.node`. The marketing site and API share the **same origin** (no CORS setup for the contact form).

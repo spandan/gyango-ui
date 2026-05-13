@@ -189,8 +189,9 @@ function adminPrefixPath() {
   return `/${ADMIN_BASE}`;
 }
 
-function adminFeedbackHref() {
-  return `${adminPrefixPath()}/feedback`;
+/** Canonical browser URL for the admin inbox (sign-in + triage). */
+function adminEntryHref() {
+  return `${adminPrefixPath()}/admin`;
 }
 
 const app = express();
@@ -314,15 +315,15 @@ app.post("/api/feedback", async (req, res) => {
 
 function requireAdminSession(req, res, next) {
   if (!req.session?.admin) {
-    res.redirect(303, `${adminPrefixPath()}/feedback?login=required`);
+    res.redirect(303, `${adminEntryHref()}?login=required`);
     return;
   }
   next();
 }
 
-app.get(`${adminPrefixPath()}/feedback`, async (req, res) => {
+async function serveAdminInboxPage(req, res) {
   const base = adminPrefixPath();
-  const href = adminFeedbackHref();
+  const href = adminEntryHref();
 
   if (!req.session?.admin) {
     const failed = req.query.login === "failed";
@@ -392,8 +393,29 @@ app.get(`${adminPrefixPath()}/feedback`, async (req, res) => {
       );
   } catch (e) {
     console.error("[admin] list failed", e);
-    res.status(500).type("text/html").send("<p>Failed to load feedback.</p>");
+    res
+      .status(500)
+      .type("text/html")
+      .send(
+        renderLayout({
+          title: "Admin error · GyanGo",
+          activeNav: "admin",
+          adminHref: href,
+          extraHead: "",
+          mainHtml:
+            '<section class="section"><div class="container"><p class="lead">Could not load feedback. Try again in a moment.</p></div></section>',
+        })
+      );
   }
+}
+
+app.get(adminPrefixPath(), (_req, res) => {
+  res.redirect(302, adminEntryHref());
+});
+
+app.get(`${adminPrefixPath()}/admin`, serveAdminInboxPage);
+app.get(`${adminPrefixPath()}/feedback`, (_req, res) => {
+  res.redirect(301, adminEntryHref());
 });
 
 app.post(`${adminPrefixPath()}/login`, (req, res) => {
@@ -401,27 +423,27 @@ app.post(`${adminPrefixPath()}/login`, (req, res) => {
   const p = String(req.body.admin_password || "");
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     req.session.admin = true;
-    res.redirect(303, adminFeedbackHref());
+    res.redirect(303, adminEntryHref());
     return;
   }
-  res.redirect(303, `${adminFeedbackHref()}?login=failed`);
+  res.redirect(303, `${adminEntryHref()}?login=failed`);
 });
 
 app.post(`${adminPrefixPath()}/logout`, (req, res) => {
   req.session.destroy(() => {
-    res.redirect(303, adminFeedbackHref());
+    res.redirect(303, adminEntryHref());
   });
 });
 
 app.post(`${adminPrefixPath()}/feedback/action`, requireAdminSession, async (req, res) => {
   if (!pool) {
-    res.redirect(303, adminFeedbackHref());
+    res.redirect(303, adminEntryHref());
     return;
   }
   const id = Number.parseInt(String(req.body.id || ""), 10);
   const action = String(req.body.action || "");
   if (!Number.isFinite(id) || id < 1) {
-    res.redirect(303, adminFeedbackHref());
+    res.redirect(303, adminEntryHref());
     return;
   }
   try {
@@ -443,7 +465,7 @@ app.post(`${adminPrefixPath()}/feedback/action`, requireAdminSession, async (req
   } catch (e) {
     console.error("[admin] action failed", e);
   }
-  res.redirect(303, adminFeedbackHref());
+  res.redirect(303, adminEntryHref());
 });
 
 app.use(
@@ -466,7 +488,7 @@ runSqlFiles()
           "[app] TURNSTILE_SECRET_KEY is set without TURNSTILE_SITE_KEY; contact submissions will fail captcha until both are set."
         );
       }
-      console.log(`[app] Admin UI → ${adminFeedbackHref()}`);
+      console.log(`[app] Admin UI → ${adminEntryHref()}`);
     });
 
     async function shutdown(signal) {
